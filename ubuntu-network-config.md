@@ -1,3 +1,6 @@
+# Contents /etc/network/interfaces
+
+```
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
 
@@ -27,4 +30,4 @@ iface enp2s0 inet static
     gateway 192.168.2.1
     broadcast 192.168.2.255
     dns-nameservers 8.8.8.8
-
+```
