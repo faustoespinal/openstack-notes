@@ -1,42 +1,11 @@
-# Openstack/Devstack Notes
+# Openstack Packstack RDO Notes
 
 Notes on Openstack-devstack installation and miscellaneous operations.
 
-## Create stack User
+## Restart nova-compute
+https://ask.openstack.org/en/question/63095/getting-this-error-message-error-failed-to-launch-instance-vm1-please-try-again-later-error-no-valid-host-was-found/
 ```
-adduser stack
-apt-get install sudo -y
-cat /etc/sudoers
-echo "stack ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-vi /etc/sudoers
-echo "espinal ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-cat /etc/sudoers
-```
-
-## Get Necessary Tools
-```
-apt-get install git -y
-apt-get install git -y
-git clone https://git.openstack.org/openstack-dev/devstack
-sudo apt-get install docker
-cp samples/local.conf .
-```
-
-## Devstack Installation
-```
-./stack.sh >& stack.log.txt
-```
-
-## Setup command line access
-```
-openstack login
-<<or>>
-openstack configure
-```
-
-## Bring Openstack/devstack down
-```
-./unstack.sh 
+Fix the 'no valid host was found' issue by restarting the openstack-nova-compute
 ```
 
 ## Create Images
