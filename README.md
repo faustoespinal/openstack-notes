@@ -2,6 +2,8 @@
 
 Notes on Openstack-devstack installation and miscellaneous operations.
 
+RDO Website: https://www.rdoproject.org/install/quickstart/
+
 ## Restart nova-compute
 https://ask.openstack.org/en/question/63095/getting-this-error-message-error-failed-to-launch-instance-vm1-please-try-again-later-error-no-valid-host-was-found/
 ```
