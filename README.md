@@ -22,39 +22,34 @@ packstack --gen-answer-file rdo.txt
 
 Edit the created answer file (diff the generated file with the rdo.txt in this repo).  The changes are roughly these:
 
-
-
-
-
-
-
-Notes on Openstack-devstack installation and miscellaneous operations.
-
-RDO Website: https://www.rdoproject.org/install/quickstart/
-
-## Restart nova-compute
-https://ask.openstack.org/en/question/63095/getting-this-error-message-error-failed-to-launch-instance-vm1-please-try-again-later-error-no-valid-host-was-found/
 ```
-Fix the 'no valid host was found' issue by restarting the openstack-nova-compute
+CONFIG_HEAT_INSTALL=y
+CONFIG_NTP_SERVERS=0.pool.ntp.org
+CONFIG_DEBUG_MODE=y
+CONFIG_KEYSTONE_ADMIN_PW=openstack
+
+CONFIG_PROVISION_DEMO=n
+CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS=extnet:br-ex
+CONFIG_NEUTRON_OVS_BRIDGE_IFACES=br-ex:enp1s0
+CONFIG_NEUTRON_ML2_TYPE_DRIVERS=vxlan,flat
 ```
 
-## Create Images
+Allow for root access (packstack script needs this)
+
 ```
-openstack image list
-openstack volume list
-openstack image create --public --disk-format qcow2 --container-format bare --file CentOS-7-x86_64-GenericCloud-1607.qcow2 --property murano_image_info='{"title": "CentOS 7 GenericCloud-1607", "type": "CentOS-7"}' centos-7
-openstack image create --public --disk-format qcow2 --container-format bare --file debian-8.5.0-openstack-amd64.qcow2  --property murano_image_info='{"title": "Debian 8.5.0 amd64", "type": "Debian-8.5.0"}' debian-8.5.0
+sed -i 's/PasswordAuthentication\ no/PasswordAuthentication\ yes/' /etc/ssh/sshd_config 
+sed -i 's/#PermitRootLogin\ yes/PermitRootLogin\ yes/' /etc/ssh/sshd_config 
+systemctl restart sshd
 ```
 
-## Install Samba utilities
+Now run the all-in-one installation
+
 ```
-sudo apt-get install smbclient -y
-smbclient
-sudo apt-get install cifs-utils
+packstack --answer-file rdo.txt
 ```
 
-## Samba mount my USB media drive
-```
-sudo mkdir /mnt/fausto-drive
-sudo mount -t cifs  //192.168.2.1/sda1 /mnt/fausto-drive/
-```
+
+## Add the 2nd Compute Node
+
+
+
