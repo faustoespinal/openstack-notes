@@ -1,4 +1,32 @@
-# Openstack Packstack RDO Notes
+# Multi-Node Openstack Packstack RDO Notes
+
+This describes a 2 node openstack setup (1 all-in-one and 1 extra compute node).
+
+## Prerequisites
+Use Centos-7 as base OS of 2 nodes.
+
+```
+# As root
+yum update -y
+yum install -y git
+```
+
+## Install All-In-One Openstack
+```
+sudo -i
+yum install -y centos-release-openstack-newton
+yum install -y
+yum update -y
+packstack --gen-answer-file rdo.txt
+```
+
+Edit the created answer file (diff the generated file with the rdo.txt in this repo).  The changes are roughly these:
+
+
+
+
+
+
 
 Notes on Openstack-devstack installation and miscellaneous operations.
 
