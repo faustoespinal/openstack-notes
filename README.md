@@ -109,7 +109,26 @@ ip link set enp1s0 name enp2s0
 ip link set enp2s0 up
 ifdown enp2s0
 ifup enp2s0
+
+# Ping the all-in-one node from the 2nd compute node.
 ping 100.0.0.10
+```
+
+From the all-in-one node configure the second interface and ping the compute node.
+```
+ping 100.0.0.20
+
+# Edit the packstack answer file, adding the second compute node external IP.
+CONFIG_COMPUTE_HOSTS=192.168.2.240, 192.168.2.238
+
+# Rerun the packstack install script, it will ask for root password of the 2nd compute node and do its thing.
+packstack --answer-file rdo.txt
+
+# Use the following commands to inspect health of openstack private cloud.
+nova service-list
+
+# Use this command to check that the private link is up and running under 'Bridge br-tun'
+ovs-vsctl show
 ```
 
 
