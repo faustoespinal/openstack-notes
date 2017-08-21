@@ -48,6 +48,40 @@ Now run the all-in-one installation
 packstack --answer-file rdo.txt
 ```
 
+## Download and install cloud OS images
+
+```
+curl https://cloud-images.ubuntu.com/releases/17.04/release/ubuntu-17.04-server-cloudimg-amd64.img | glance image-create --name='ubuntu-server-17.04' --visibility=public --container-format=bare --disk-format=qcow2
+
+curl https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 | glance image-create --name='cirros image' --visibility=public --container-format=bare --disk-format=qcow2
+```
+
+## Link with your external network
+
+
+Assuming that your external network exists at 192.168.2.*
+
+```
+source ./keystonerc_admin
+neutron net-create external_network --provider:network_type flat --provider:physical_network extnet  --router:external
+neutron subnet-create --name public_subnet --enable_dhcp=False --allocation-pool=start=192.168.2.242,end=192.168.2.252 --dns-nameserver=8.8.8.8 --dns-nameserver=8.8.4.4 --gateway=192.168.2.1 external_network 192.168.2.0/24
+
+openstack project create --enable kubernetes
+openstack user create --project kubernetes --password openstack --email k8susr@kubernetes.karofa --enable k8susr
+
+# Login as k8susr and create private network for VM's
+neutron router-create router1
+neutron router-gateway-set router1 external_network
+neutron net-create private_network
+neutron subnet-create --name private_subnet private_network 192.168.2.0/24
+neutron subnet-delete private_subnet
+neutron subnet-create --name private_subnet private_network 192.168.100.0/24
+neutron router-interface-add router1 private_subnet
+```
+
+Make sure you create a security group via horizon which allows all incoming network connections (TCP, UDP and ICMP).  Assign all created vm's to this security group, otherwise you will not be able to ping or ssh these VM's via a floating IP.
+
+
 
 ## Add the 2nd Compute Node
 
