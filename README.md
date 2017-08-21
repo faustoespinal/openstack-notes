@@ -9,6 +9,12 @@ Use Centos-7 as base OS of 2 nodes.
 # As root
 yum update -y
 yum install -y git
+
+# Disable network manager and firewalld
+systemctl disable NetworkManager
+systemctl stop NetworkManager
+systemctl disable firewalld
+systemctl stop firewalld
 ```
 
 ## Install All-In-One Openstack
@@ -49,16 +55,15 @@ packstack --answer-file rdo.txt
 ```
 
 ## Download and install cloud OS images
+Cirros OS is installed by default on Openstack.   To do interesting stuff, install Centos and/or Ubuntu-server.
 
 ```
 curl https://cloud-images.ubuntu.com/releases/17.04/release/ubuntu-17.04-server-cloudimg-amd64.img | glance image-create --name='ubuntu-server-17.04' --visibility=public --container-format=bare --disk-format=qcow2
 
-curl https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 | glance image-create --name='cirros image' --visibility=public --container-format=bare --disk-format=qcow2
+curl https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 | glance image-create --name='centos-7' --visibility=public --container-format=bare --disk-format=qcow2
 ```
 
 ## Link with your external network
-
-
 Assuming that your external network exists at 192.168.2.*
 
 ```
@@ -81,9 +86,9 @@ neutron router-interface-add router1 private_subnet
 
 Make sure you create a security group via horizon which allows all incoming network connections (TCP, UDP and ICMP).  Assign all created vm's to this security group, otherwise you will not be able to ping or ssh these VM's via a floating IP.
 
-
-
 ## Add the 2nd Compute Node
+Install Centos on the second compute node and do same procedure as original.  This is where it gets interesting since in my setup, I want to setup communication of the 2 nodes via a dedicated connection (Both machines have 2 ethernet interfaces).
 
+Create dedicated connection between both machines
 
 
