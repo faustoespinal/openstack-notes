@@ -87,8 +87,29 @@ neutron router-interface-add router1 private_subnet
 Make sure you create a security group via horizon which allows all incoming network connections (TCP, UDP and ICMP).  Assign all created vm's to this security group, otherwise you will not be able to ping or ssh these VM's via a floating IP.
 
 ## Add the 2nd Compute Node
-Install Centos on the second compute node and do same procedure as original.  This is where it gets interesting since in my setup, I want to setup communication of the 2 nodes via a dedicated connection (Both machines have 2 ethernet interfaces).
+Install Centos on the second compute node and do same procedure as original.  This is where it gets interesting since in my setup, I want to setup communication of the 2 nodes via a dedicated connection (Both machines have 2 ethernet interfaces).  The private network communicating both nodes is at address 100.0.0.0/24.
 
-Create dedicated connection between both machines
+We will re-edit the rdo.txt answers file to add the second compute node and re-run the installation.  Also the name of the second network interfaces must be the same (packstack script fails otherwise).
+
+Create dedicated connection between both machines:
+
+```
+ip addr show | less
+ip ad add 100.0.0.20/24 dev enp1s0
+
+cd /etc/sysconfig/network-scripts/
+cp ifcfg-enp1s0 ifcfg-enp2s0
+
+# Edit the interface file and configure with static IP address, but do not define a GATEWAY
+# See the 2 definitions.
+vi ifcfg-enp2s0
+
+# Rename network interfaces
+ip link set enp1s0 name enp2s0
+ip link set enp2s0 up
+ifdown enp2s0
+ifup enp2s0
+ping 100.0.0.10
+```
 
 
