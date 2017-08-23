@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: echoheaders-x
+spec:
+  rules:
+  - host: echoheaders-x.bar
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: echoheaders-x
+          servicePort: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: echoheaders-y
+spec:
+  rules:
+  - host: echoheaders-y.bar
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: echoheaders-y
+          servicePort: 8080
+          
