@@ -1,0 +1,107 @@
+heat_template_version: newton
+description: >
+  This template defines the startup of 1 edison-node capable of serving
+  as either a kubernetes master-node or minion-node.
+parameters:
+  node_name:
+    type: string
+    default: test-node
+  key_name:
+    type: string
+    default: k8s-keypair
+  flavor:
+    type: string
+    default: m1.medium
+  image:
+    type: string
+    default: centos-7
+  network:
+    type: string
+    default: private_network
+  fixed_ip:
+    type: string
+    default: 192.168.100.121
+resources:
+  edison_cfg:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        chpasswd:
+          list: |
+            centos:edison
+          expire: False
+        runcmd:
+          - ls -l /home/centos
+          - sudo sudo setenforce 0
+          - sudo printf '\nDNS1=8.8.8.8\nDNS2=8.8.4.4\n' >> /etc/sysconfig/network-scripts/ifcfg-eth0
+          - sudo systemctl restart network
+          - echo 'HOLA HOLA HOLA'
+          - sudo yum -y update
+          - sudo yum -y install git
+          - sudo printf '[kubernetes]\nname=kubernetes\n' > /etc/yum.repos.d/kubernetes.repo
+          - sudo printf 'baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64\nenabled=1\ngpgcheck=1\n' >> /etc/yum.repos.d/kubernetes.repo
+          - sudo printf 'repo_gpgcheck=1\ngpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg\n' >> /etc/yum.repos.d/kubernetes.repo
+          - sudo printf '             https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg\n' >> /etc/yum.repos.d/kubernetes.repo
+          - sudo yum install -y docker kubelet kubeadm kubectl 
+          - sudo systemctl enable kubelet 
+          - sudo systemctl start kubelet
+          - echo 'Configuring docker insecure registries'
+          - echo '--------------------------------------'
+          - sudo systemctl stop firewalld
+          - sudo systemctl disable firewalld
+          - sudo systemctl enable docker
+          - sudo systemctl restart docker
+          - sudo sudo setenforce 0
+          - sudo kubeadm init --skip-preflight-checks --apiserver-advertise-address=test-node
+          - mkdir -p /home/centos/.kube
+          - sudo cp -i /etc/kubernetes/admin.conf /home/centos/.kube/config
+          - sudo chown $(id -u):$(id -g) /home/centos/.kube/config
+          - sudo chmod 755 /home/centos/.kube/config
+  node_cfg:
+    # this resource is a simple shell script. No inputs or outputs are
+    # specified since this is not supported by cloud-init but values
+    # could be inserted into the script using str_replace.
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: ungrouped
+      config: |
+        #!/bin/sh
+        ls -l /root
+        sudo yum -y update
+        # sudo yum -y install git
+        # sudo sudo setenforce 0
+        # sudo printf '[kubernetes]\nname=kubernetes\n' > /etc/yum.repos.d/kubernetes.repo
+        # sudo printf 'baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64\nenabled=1\ngpgcheck=1\n' >> /etc/yum.repos.d/kubernetes.repo
+        # sudo printf 'repo_gpgcheck=1\ngpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg\n' >> /etc/yum.repos.d/kubernetes.repo
+        # sudo printf '             https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg\n' >> /etc/yum.repos.d/kubernetes.repo
+        # sudo yum install -y docker kubelet kubeadm kubectl 
+        # sudo systemctl enable kubelet 
+        # systemctl start kubelet
+        # echo 'Configuring docker insecure registries'
+        # sudo printf '{\n "insecure-registries" : ["3.28.93.31:5000"]\n}\n' > /etc/docker/daemon.json
+        # sudo systemctl stop firewalld
+        # sudo systemctl disable firewalld
+        # sudo systemctl enable docker
+        # sudo systemctl restart docker
+        # sudo cd /home/centos
+        sudo echo 'FINISHED CONFIGURATION...'
+  edison_init:
+    type: OS::Heat::MultipartMime
+    properties:
+      parts:
+      - config: {get_resource: edison_cfg}
+      - config: {get_resource: node_cfg}
+  test_server:
+    type: OS::Nova::Server
+    properties:
+      admin_pass: edison
+      flavor: {get_param: flavor}
+      image: {get_param: image}
+      key_name: {get_param: key_name}
+      name: {get_param: node_name}
+      user_data_format: RAW
+      user_data:
+        get_resource: edison_cfg
+      networks:
+        - { network: {get_param: network} }
+# - { network: {get_param: network}, fixed_ip: {get_param: fixed_ip} }
