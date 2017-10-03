@@ -78,10 +78,15 @@ openstack user create --project kubernetes --password openstack --email k8susr@k
 neutron router-create router1
 neutron router-gateway-set router1 external_network
 neutron net-create private_network
-neutron subnet-create --name private_subnet private_network 192.168.2.0/24
-neutron subnet-delete private_subnet
 neutron subnet-create --name private_subnet private_network 192.168.100.0/24
 neutron router-interface-add router1 private_subnet
+```
+
+Openstack command alternative:
+```
+openstack router create router1
+openstack router set --external-gateway external_network router1
+openstack router add subnet router1 private_subnet
 ```
 
 Make sure you create a security group via horizon which allows all incoming network connections (TCP, UDP and ICMP).  Assign all created vm's to this security group, otherwise you will not be able to ping or ssh these VM's via a floating IP.
