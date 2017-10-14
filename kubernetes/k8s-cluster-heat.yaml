@@ -1,0 +1,286 @@
+heat_template_version: newton
+description: >
+  This template defines the startup of 1 k8s-node capable of serving
+  as either a kubernetes master-node or minion-node.
+parameters:
+  master_name:
+    type: string
+    default: k8s-master
+  key_name:
+    type: string
+    default: k8s-keypair
+  flavor:
+    type: string
+    default: m1.medium
+  image:
+    type: string
+    default: centos-7
+  floating_ip:
+    type: string
+    default: 192.168.2.215
+  security_group:
+    type: string
+    default: open-sg
+  ext_network:
+    type: string
+    default: external_network
+  network:
+    type: string
+    default: private_network
+  private_subnet:
+    type: string
+    default: private_subnet
+resources:
+  k8s_cfg:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        chpasswd:
+          list: |
+            centos:kubernetes
+          expire: False
+        write_files:
+        - content:  | 
+                #!/bin/bash
+                echo 'kubeadm-master setup....'
+                echo '   Make sure to provide internal IP address of master node as argument!!'
+                source ~centos/.bashrc
+                systemctl restart docker kubelet
+                kubeadm init --apiserver-advertise-address=k8s-master --skip-preflight-checks --token 611ca5.0b5130606eb94045 --token-ttl 0 --apiserver-cert-extra-sans="127.0.0.1,192.168.2.215,$1"
+                echo 'done...'
+          path: /root/kubeadm-master.sh        
+        - content:  | 
+                #!/bin/bash
+                echo 'kubeadm-minion setup....'
+                echo '   make sure you provide master internal IP address as argument!!!'
+                source ~centos/.bashrc
+                systemctl restart docker kubelet
+                kubeadm join --skip-preflight-checks --token 611ca5.0b5130606eb94045 $1:6443
+                echo 'done...'
+          path: /root/kubeadm-minion.sh        
+        - content:  | 
+                #!/bin/bash
+                echo 'post-kubeadm setup....'
+                mkdir -p $HOME/.kube
+                sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+                sudo chown $(id -u):$(id -g) $HOME/.kube/config
+                kubectl get nodes
+                kubectl get pods --all-namespaces
+                kubectl apply --filename https://git.io/weave-kube-1.6
+                echo 'done...'
+          path: /home/centos/post-kubeadm.sh
+        - content:  |
+                [kubernetes]
+                name=Kubernetes
+                baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+                enabled=1
+                sslverify=0
+                gpgcheck=1
+                repo_gpgcheck=1
+                gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+                        https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+          path: /etc/yum.repos.d/kubernetes.repo
+        - content:  | 
+                -----BEGIN RSA PRIVATE KEY-----
+                MIIEpgIBAAKCAQEAtAFfYXL1ilUBes4jBeeuJk1HEMOFpCLZrd7w5hkCEr3HMEer
+                1rOVaVmaZjJd6gjNsUiN+mOLacBeBFEjmWq2lbomWFFCxc9PhMG/lGtBT7P4NARV
+                7+D/9L/56sm45jC+nwWUaFnMYHDPCzTRaELsFGOfxkN3L2vvmKfE8qhd0KGKE9Kh
+                VTTNPxGHRY8uVRJ5YNwpaNyy0GCnsvEbG/Gh4CHgUlhSp/LlHv0byGASWWFhH3A+
+                JYF/Dr6k1+tyPt/y9IzJf0f/p4xtAbqJ9Z0BqqCQmEqPKNghceZsuEG8V3xLf4PE
+                3mnTwo1yEhHQkQrHEPkiUeYBSbXfKtAwuc3Q1wIDAQABAoIBAQCKDEdu//Apf9nb
+                qb2YaL7ZZwiqZZjXcVbKDqFnhiRd5See8khqJ13d5rcPy27U7p15afBg5/jiSIKS
+                AvwvS3TtzU5dCy0PcVdFtCVOGReEnbwrgGu7xS3nMVfkZYIlH5sBcBEKGlwwVjOj
+                H4W91R0i4eiF7/W266tbwsa7Zr5UIlStw6WG9IAn1RZH4Y0J2BDv8UA4cb+BmDZD
+                dFyaOQRT0o/YO8NYZTlh5R5IPjizlQ0LI4ziPcoAEUuO6lsZq/0cUcQak1H7NYoI
+                449K2O223Wy0WeasibHeb/RPlUmOrnFFntuZgbF/Af6SpqwrYgvSNdIGTKbiGHpF
+                wr+aG5DRAoGBAOpoK3xm6RVQ8VRr4LfVhdW6/Fv78Qvyah5NRFCNlv8Yku7/dpDi
+                aEEnjS+riRXsrIIbMwK9IysiByhwy3Ha3w9HxFc+AC5apvXkn1wTQnWFriJUNyhe
+                hRxP6uRkMjJGe2byCFLI300PSBVjo0Yb7nteKpM6EHaebpNdf/3WaFP5AoGBAMSW
+                S2kRRFpTrAHTjhMETGb5pQYM7NVwgH9inaC7KFshnZU0kV/0+oyKlVUgdWlstn9z
+                9xsYnMWXCfh3k8EcJSkgi/Rs9FLSumtsEPnosFPsnkT1oQn8clpHVVx598m79sCF
+                g/Si+oUl941XLi5wiRmiTlisqlFrnoOJuorTpt9PAoGBAL/NFvAG4OexQJa8Yrbp
+                f0ZAZyf5Aeatp4k93g0vngMDn47x95lbuMS/UTZVXKlU7F7VVKsEChfMEyFTEhUK
+                a4R8S7q7H7jOMll3hbH4jGPPS4oJcMyWcsKU3fWdyrj6lRTKLGdYt+a8/1WJHttK
+                FZxak+m+FCSLRJ1OX2FbpCg5AoGBAJhro0pyXdne+AVufsCV25sXwnB/gv02PhsG
+                XgrqMa7+0EyINpL8wWpIZOJcyUwVQyZsxlHW8m5s3gksxX27kcBigMDh3Ul+I5X4
+                cu0hEd3wHwJ+o/63If6HQlLyKkHan8XDf30lBDJKLrcCuka9cD9UzYQJVADO/Vcl
+                aWIMGl0XAoGBAM4B+zKgLgz8dDflx7Q9UKC3Yxh4ZoQiDDZ9THmNzQcDlXYGWQT0
+                3oU5mXHrvSPO+MPvUOhiz4OBbV9ee8q4ziMmFMNJzM+ohwjgQaqfADWjXC/RhK1+
+                i90Berm6f0vXmLzV8fcnqfv0Qk+xHOKxkN7Ox0uOfQfBdmafLWLUWTaE
+                -----END RSA PRIVATE KEY-----
+          path: /home/centos/k8s-keypair.pem
+        runcmd:
+        - [ ls, -l, / ]
+        - [ sh, -xc, "echo $(date) ': hello k8s-vm!'" ]
+        - [ sh, -c, echo "=========hello k8s-vm'=========" ]
+        - ls -l /root
+        - echo "$(ip addr show eth0 | grep 'inet ' | awk '{ print $2}' | awk -F '/' '{ print $1}')" > /home/centos/ipaddr.txt
+        - sudo printf "$(cat /home/centos/ipaddr.txt)       $HOSTNAME\n" >> /etc/hosts
+        - printf "# Source global definitions\nif [ -f /etc/bashrc ]; then\n   . /etc/bashrc\nfi" > /home/centos/.bashrc
+        - printf "\nDNS1=8.8.8.8\nDNS2=8.8.4.4\n" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+        - sudo chown centos /home/centos
+        - sudo chgrp centos /home/centos
+        - sudo chown centos /home/centos/.bashrc
+        - sudo chgrp centos /home/centos/.bashrc
+        - sudo cp /home/centos/.bashrc /home/centos/.bash_profile 
+        - sudo service network restart
+        - sudo systemctl stop firewalld
+        - sudo systemctl disable firewalld
+        - sudo yum -y update
+        - sudo yum -y install git
+        - sudo sudo setenforce 0
+        - sudo yum --enablerepo=kubernetes clean metadata
+        - sudo yum install -y docker kubelet kubeadm kubectl 
+        - sudo systemctl enable kubelet 
+        - systemctl start kubelet
+        - sudo systemctl stop firewalld
+        - sudo systemctl disable firewalld
+        - sudo systemctl enable docker
+        - sudo systemctl restart docker
+        - cd /home/centos
+        - chmod 600 /home/centos/k8s-keypair.pem
+        - chown centos /home/centos/k8s-keypair.pem
+        - chmod +x  /home/centos/post-kubeadm.sh
+        - chmod +x  /root/kubeadm-master.sh
+        - chmod +x  /root/kubeadm-minion.sh
+        - git clone https://github.com/faustoespinal/openstack-notes.git
+        - sudo echo "FINISHED kubeadm NODE CONFIGURATION !!!!!"
+  k8s_master:
+    type: OS::Nova::Server
+    properties:
+      admin_pass: k8s
+      flavor: {get_param: flavor}
+      image: {get_param: image}
+      key_name: {get_param: key_name}
+      name: {get_param: master_name}
+      user_data_format: RAW
+      user_data:
+        get_resource: k8s_cfg
+      networks:
+        - port: { get_resource: k8s_master_port }
+  k8s_master_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: network }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet }
+      security_groups: 
+        - { get_param: security_group }
+  k8s_master_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: ext_network }
+      floating_ip_address: { get_param: floating_ip }
+      port_id: { get_resource: k8s_master_port }
+  k8s_minion1_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: network }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet }
+      security_groups: 
+        - { get_param: security_group }
+  k8s_minion_1:
+    type: OS::Nova::Server
+    properties:
+      admin_pass: k8s
+      flavor: {get_param: flavor}
+      image: {get_param: image}
+      key_name: {get_param: key_name}
+      name: k8s-minion-1
+      user_data_format: RAW
+      user_data:
+        get_resource: k8s_cfg
+      networks:
+        - port: { get_resource: k8s_minion1_port }
+  k8s_minion2_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: network }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet }
+      security_groups: 
+        - { get_param: security_group }
+  k8s_minion_2:
+    type: OS::Nova::Server
+    properties:
+      admin_pass: k8s
+      flavor: {get_param: flavor}
+      image: {get_param: image}
+      key_name: {get_param: key_name}
+      name: k8s-minion-2
+      user_data_format: RAW
+      user_data:
+        get_resource: k8s_cfg
+      networks:
+        - port: { get_resource: k8s_minion2_port }
+  k8s_minion3_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: network }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet }
+      security_groups: 
+        - { get_param: security_group }
+  k8s_minion_3:
+    type: OS::Nova::Server
+    properties:
+      admin_pass: k8s
+      flavor: {get_param: flavor}
+      image: {get_param: image}
+      key_name: {get_param: key_name}
+      name: k8s-minion-3
+      user_data_format: RAW
+      user_data:
+        get_resource: k8s_cfg
+      networks:
+        - port: { get_resource: k8s_minion3_port }
+  k8s_minion4_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: network }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet }
+      security_groups: 
+        - { get_param: security_group }
+  k8s_minion_4:
+    type: OS::Nova::Server
+    properties:
+      admin_pass: k8s
+      flavor: {get_param: flavor}
+      image: {get_param: image}
+      key_name: {get_param: key_name}
+      name: k8s-minion-4
+      user_data_format: RAW
+      user_data:
+        get_resource: k8s_cfg
+      networks:
+        - port: { get_resource: k8s_minion4_port }
+  k8s_minion5_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: network }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet }
+      security_groups: 
+        - { get_param: security_group }
+  k8s_minion_5:
+    type: OS::Nova::Server
+    properties:
+      admin_pass: k8s
+      flavor: {get_param: flavor}
+      image: {get_param: image}
+      key_name: {get_param: key_name}
+      name: k8s-minion-5
+      user_data_format: RAW
+      user_data:
+        get_resource: k8s_cfg
+      networks:
+        - port: { get_resource: k8s_minion5_port }
+outputs:
+  k8s_master_private_ip:
+    description: IP address of k8s_master in private network
+    value: { get_attr: [ k8s_master, first_address ] }
+  k8s_master_public_ip:
+    description: Floating IP address of k8s_master in public network
+    value: { get_attr: [ k8s_master_floating_ip, floating_ip_address ] }
