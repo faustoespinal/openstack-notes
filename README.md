@@ -84,6 +84,14 @@ neutron router-interface-add router1 private_subnet
 
 Openstack command alternative:
 ```
+# As admin and remember to mark network as an external network.
+source ./keystonerc_admin
+openstack network create --share --provider-physical-network extnet1 --provider-network-type flat external_network1
+openstack subnet create --subnet-range 192.168.2.0/24 --gateway 192.168.2.1 --network external_network1 --allocation-pool start=192.168.2.210,end=192.168.2.220 --dns-nameserver 8.8.8.8 --dns-nameserver 8.8.4.4 external_network_subnet1
+
+# As regular user
+openstack network create k8s_network
+openstack subnet create --subnet-range 20.20.20.0/24 --network k8s_network k8s_network_subnet
 openstack router create router1
 openstack router set --external-gateway external_network router1
 openstack router add subnet router1 private_subnet
