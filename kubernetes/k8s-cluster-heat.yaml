@@ -17,7 +17,7 @@ parameters:
     default: centos-7
   floating_ip:
     type: string
-    default: 192.168.2.211
+    default: 192.168.2.215
   security_group:
     type: string
     default: k8s-sg

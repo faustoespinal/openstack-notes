@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myshell
+  namespace: default
+spec:
+  containers:
+  - image: tutum/curl
+    name: tutum-curl
+    command:
+      - sleep
+      - "3600"
+  restartPolicy: Always

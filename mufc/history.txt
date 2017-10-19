@@ -1,0 +1,227 @@
+    1  ls
+    2  source ./keystonerc_admin 
+    3  curl http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img | glance          image-create --name='cirros image' --visibility=public --container-format=bare --disk-format=qcow2
+    4  curl https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 | glance          image-create --name='cirros image' --visibility=public --container-format=bare --disk-format=qcow2
+    5  ls
+    6  source ./keystonerc_admin 
+    7  ls -ls
+    8  neutron list
+    9  neutron --help
+   10  neutron net-list
+   11  neutron net-create external_network --provider:network_type flat --provider:physical_network extnet  --router:external
+   12  neutron subnet-create --name public_subnet --enable_dhcp=False --allocation-pool=start=192.168.2.242,end=192.168.2.252 --gateway=192.168.2.1 external_network 192.168.2.0/24
+   13  neutron subnet-delete public_subnet
+   14  neutron subnet-create --help
+   15  neutron subnet-create --name public_subnet --enable_dhcp=False --allocation-pool=start=192.168.2.242,end=192.168.2.252 --dns-nameserver=8.8.8.8 --dns-nameserver=8.8.4.4 --gateway=192.168.2.1 external_network 192.168.2.0/24
+   16  openstack project create --enable kubernetes
+   17  openstack user create --project kubernetes --password openstack --email k8susr@kubernetes.karofa --enable k8susr
+   18  export OS_USERNAME=k8susr
+   19  export OS_TENANT_NAME=kubernetes
+   20  export OS_PASSWORD=openstack
+   21  nova list
+   22  neutron net-list
+   23  env | grep OS
+   24  neutron router-create router1
+   25  neutron router-gateway-set router1 external_network
+   26  neutron net-create private_network
+   27  neutron subnet-create --name private_subnet private_network 192.168.2.0/24
+   28  neutron subnet-delete private_subnet
+   29  neutron subnet-create --name private_subnet private_network 192.168.100.0/24
+   30  neutron router-interface-add router1 private_subnet
+   31  ping 192.168.2.243
+   32  ping 192.168.2.238
+   33  ping 192.168.2.243
+   34  ssh -l cirros 192.168.2.243
+   35  history | grep cinder
+   36  curl https://cloud-images.ubuntu.com/releases/17.04/release/ubuntu-17.04-server-cloudimg-amd64.img | glance image-create --name='ubuntu-server-17.04' --visibility=public --container-format=bare --disk-format=qcow2
+   37  source ./keystonerc_admin 
+   38  curl https://cloud-images.ubuntu.com/releases/17.04/release/ubuntu-17.04-server-cloudimg-amd64.img | glance image-create --name='ubuntu-server-17.04' --visibility=public --container-format=bare --disk-format=qcow2
+   39  ping 192.168.2.243
+   40  ls -ls
+   41  source ./keystonerc_admin 
+   42  ip addr show
+   43  ip ad show
+   44  ip ad show | less
+   45  ls /etc/sysconfig/network-scripts/ifcfg-enp1s0 
+   46  cat /etc/sysconfig/network-scripts/ifcfg-enp1s0 
+   47  cat /etc/sysconfig/network-scripts/ifcfg-br-ex 
+   48  cat /etc/sysconfig/network-scripts/ifcfg-enp2s0 
+   49  ip l | grep '^\S' | cut -d: -f2
+   50  yum update -y
+   51  yum install -y git
+   52  clear
+   53  yum install -y centos-release-openstack-newton
+   54  yum install -y openstack-packstack vim
+   55  yum update -y
+   56  packstack --gen-answer-file rdo.txt
+   57  pwd
+   58  ls -ls
+   59  vi rdo.txt 
+   60  ping 0.pool.ntp.org
+   61  vi rdo.txt 
+   62  sed -i 's/PasswordAuthentication\ no/PasswordAuthentication\ yes/' /etc/ssh/sshd_config 
+   63  sed -i 's/#PermitRootLogin\ yes/PermitRootLogin\ yes/' /etc/ssh/sshd_config 
+   64  cat /etc/ssh/sshd_config 
+   65  cat /etc/ssh/sshd_config  | more
+   66  vi /etc/ssh/sshd_config 
+   67  systemctl restart sshd
+   68  vi rdo.txt 
+   69  systemctl status firewalld
+   70  systemctl disable firewalld
+   71  systemctl stop firewalld
+   72  systemctl status firewalld
+   73  systemctl disable firewalld
+   74  systemctl status iptables
+   75  systemctl status iptable
+   76  clear
+   77  vi rdo.txt 
+   78  ip addr show
+   79  systemctl restart sshd
+   80  packstack --answer-file rdo.txt 
+   81  systemctl status network-manager
+   82  systemctl status network*
+   83  systemctl disable NetworkManager
+   84  systemctl stop NetworkManager
+   85  clea
+   86  clear
+   87  packstack --answer-file rdo.txt 
+   88  systemctl restart network
+   89  systemctl status network
+   90  ip addr show
+   91  clear
+   92  packstack --answer-file rdo.txt 
+   93  ping 192.168.2.238
+   94  vi /etc/sysconfig/network-scripts/ifcfg-br-ex 
+   95  systemctl restart network
+   96  curl www.google.com
+   97  clear
+   98  packstack --answer-file rdo.txt 
+   99  vi /etc/httpd/conf.d/15-horizon_vhost.conf 
+  100  clear
+  101  ls -ls /var/lib/cinder/
+  102  clear
+  103  vgs
+  104  vgdisplay
+  105  df
+  106  DDDDDDDD
+  107  ls
+  108  vi rdo.txt 
+  109  clear
+  110  ls -ls
+  111  history | grep pack
+  112  packstack --answer-file rdo.txt 
+  113  ip ad add 100.0.0.10/24 dev enp2s0
+  114  ifconfig | less
+  115  ip addr show | less
+  116  vi /etc/sysconfig/network-scripts/ifcfg-enp2s0 
+  117  systemctl restart network
+  118  vi /etc/sysconfig/network-scripts/ifcfg-enp2s0 
+  119  ip addr show | less
+  120  ifup enp2s0
+  121  vi /etc/sysconfig/network-scripts/ifcfg-enp2s0 
+  122  ifup enp2s0
+  123  ifconfig
+  124  ifconfig | less
+  125  ping 100.0.0.20
+  126  clear
+  127  packstack --answer-file rdo.txt 
+  128  clear
+  129  ifconfig
+  130  ifconfig | more
+  131  ifdown enp2s0
+  132  vi /etc/sysconfig/network-scripts/ifcfg-enp2s0 
+  133  ifup enp2s0
+  134  ip route
+  135  curl www.google.com
+  136  ifdown enp2s0
+  137  curl www.google.com
+  138  vi /etc/sysconfig/network-scripts/ifcfg-br-ex 
+  139  systemctl restart network
+  140  curl www.google.com
+  141  ifup enp2s0
+  142  ifconfig
+  143  ifconfig | more
+  144  ping 100.0.0.20
+  145  clear
+  146  history | grep packstack
+  147  packstack --answer-file rdo.txt 
+  148  curl www.google.com
+  149  clear
+  150  pwd
+  151  packstack --answer-file rdo.txt 
+  152  reboot
+  153  curl www.google.com
+  154  curl https://www.google.com
+  155  ifconfig
+  156  ping 192.168.2.238
+  157  ping 100.0.0.10
+  158  ping 100.0.0.20
+  159  cd /var/tmp/packstack/
+  160  ls
+  161  ls -ls
+  162  cd latest
+  163  ls
+  164  tail -f openstack-setup.log 
+  165  pwd
+  166  cd ..
+  167  ls
+  168  ls -ls
+  169  cd latest/
+  170  ls
+  171  cat openstack-setup.log 
+  172  df
+  173  vgs
+  174  vgdisplay
+  175  source ./keystonerc_admin 
+  176  ip addr show
+  177  ip addr show | more
+  178  ovs-vsctl show
+  179  nova-manage host list
+  180  nova-manage service list
+  181  nova-manage agent list
+  182  openstack-status
+  183  openstack status
+  184  openstack stack show
+  185  nova service-list
+  186  source ./keystonerc_admin 
+  187  ls -ls
+  188  history
+  189  openstack stack show
+  190  nova service-list
+  191  ping 192.168.2.243
+  192  ping 192.168.2.246
+  193  ping 192.168.2.247
+  194  ping 192.168.2.246
+  195  ping 192.168.2.243
+  196  ls
+  197  history | grep sed
+  198  ls
+  199  source ./keystonerc_admin 
+  200  history | grep neutron
+  201  history | grep project
+  202  history | grep cinder
+  203  history | grep curl
+  204  systemctl status networkmanager
+  205  systemctl status network-manager
+  206  systemctl status NetworkManager
+  207  cat /etc/sysconfig/network-scripts/ifcfg-enp2s0 
+  208  ls
+  209  vi rdo.txt 
+  210  history
+  211  nova-manage agent list
+  212  nova-manage service list
+  213  ovs-vsctl show
+  214  ls -ls
+  215  vi rdo.txt 
+  216  ovs-vsctl show
+  217  ovs-vsctl show | grep extnet
+  218  l 
+  219  ls -ls
+  220  vi rdo.txt 
+  221  ls -ls
+  222  tar -cvzf rdo.tgz *
+  223  cp rdo.tgz ~espinal/
+  224  cd
+  225  exit
+  226  history
+  227  history > ~espinal/history.txt

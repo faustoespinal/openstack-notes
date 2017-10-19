@@ -1,0 +1,116 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: elasticsearch.edison
+spec:
+  rules:
+  - host: elasticsearch.edison
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: elasticsearch 
+          servicePort: 9200
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  labels:
+    app: elasticsearch
+    tier: backend
+spec:
+  ports:
+  - name: api
+    port: 9200
+    targetPort: 9200
+  - name: internal
+    port: 9300
+    targetPort: 9300
+  selector:
+    app: elasticsearch
+    tier: backend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: elasticsearch
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+        tier: backend
+    spec:
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:5.6.3
+        ports:
+        - containerPort: 9200
+        - containerPort: 9300
+        env:
+        - name: "discovery.type"
+          value: "single-node"
+        - name: "LS_JAVA_OPTS"
+          value: "-Xmx512m -Xms512m"
+        volumeMounts:
+        # name must match the volume name below
+        - name: nfs
+          mountPath: "/usr/share/elasticsearch/data"
+      volumes:
+      - name: nfs
+        persistentVolumeClaim:
+          claimName: nfs-elasticsearch
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kibana.edison
+spec:
+  rules:
+  - host: kibana.edison
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: kibana 
+          servicePort: 5601
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  labels:
+    app: kibana
+    tier: frontend
+spec:
+  ports:
+  - port: 5601
+    targetPort: 5601
+  selector:
+    app: kibana
+    tier: frontend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kibana
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: kibana
+        tier: frontend
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:5.6.3
+        ports:
+        - containerPort: 5601
+        env:
+        - name: SERVER_NAME
+          value: "0.0.0.0"
+        - name: ELASTICSEARCH_URL
+          value: "http://elasticsearch:9200"

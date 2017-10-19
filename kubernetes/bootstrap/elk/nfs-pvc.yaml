@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-elasticsearch
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: elasticsearch-storage
+  resources:
+    requests:
+      storage: 3Gi
