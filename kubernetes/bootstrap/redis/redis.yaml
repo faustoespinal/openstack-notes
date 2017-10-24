@@ -1,0 +1,96 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: redis.edison
+spec:
+  rules:
+  - host: redis.edison
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: redis 
+          servicePort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+    app: redis
+    tier: backend
+spec:
+  ports:
+  - name: api
+    port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+    tier: backend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+        tier: backend
+    spec:
+      containers:
+      - name: redis
+        image: redis:4.0
+        ports:
+        - containerPort: 6379
+        - containerPort: 6379
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: redis-commander.edison
+spec:
+  rules:
+  - host: redis-commander.edison
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: redis-commander 
+          servicePort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-commander
+  labels:
+    app: redis-commander
+    tier: frontend
+spec:
+  ports:
+  - port: 80
+    targetPort: 8081
+  selector:
+    app: redis-commander
+    tier: frontend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: redis-commander
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis-commander
+        tier: frontend
+    spec:
+      containers:
+      - name: redis-commander
+        image: tenstartups/redis-commander:latest
+        args: ["--redis-host", "redis"]
+        ports:
+        - containerPort: 8081
