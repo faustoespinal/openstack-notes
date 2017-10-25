@@ -1,0 +1,56 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rabbitmq.edison
+spec:
+  rules:
+  - host: rabbitmq.edison
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: rabbitmq 
+          servicePort: 15672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+    tier: backend
+spec:
+  ports:
+  - name: admin
+    port: 15672
+    targetPort: 15672
+  - name: internal
+    port: 15671
+    targetPort: 15671
+  selector:
+    app: rabbitmq
+    tier: backend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+        tier: backend
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+        - containerPort: 15672
+        - containerPort: 15671
+        env:
+        - name: "RABBITMQ_DEFAULT_USER"
+          value: "admin"
+        - name: "RABBITMQ_DEFAULT_PASS"
+          value: "edison"
