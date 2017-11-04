@@ -4,10 +4,10 @@ metadata:
   name: nfs-elasticsearch
 spec:
   capacity:
-    storage: 3Gi
+    storage: 2Gi
   accessModes:
     - ReadWriteMany
   storageClassName: elasticsearch-storage
   nfs:
     server: 20.20.20.220
-    path: "/var/nfsshare/elasticsearch"
+    path: "/data/elasticsearch"
