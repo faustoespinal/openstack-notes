@@ -6,8 +6,9 @@ metadata:
 spec:
   containers:
   - image: busybox
-    command: ["/bin/sh"]
-    args: ["-c", "export COUNT=1; while true; do echo "hello there, the counter: $COUNT"; COUNT=`expr $COUNT + 1`; sleep 1;done"]
+    command: 
+      - "/bin/sh"
+    args: ["-c", "set COUNT=1; while true; do echo hello there, the counter: $COUNT; COUNT=`expr $COUNT + 1`; sleep 1;done"]
     imagePullPolicy: IfNotPresent
     name: busybox
   restartPolicy: Always
