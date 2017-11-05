@@ -8,7 +8,7 @@ spec:
   - image: busybox
     command: 
       - "/bin/sh"
-    args: ["-c", "set COUNT=1; while true; do echo hello there, the counter: $COUNT; COUNT=`expr $COUNT + 1`; sleep 1;done"]
+    args: ["-c", "set COUNT=1; while true; do echo 'hello there counter: $COUNT'; COUNT=`expr $COUNT + 1`; sleep 1;done"]
     imagePullPolicy: IfNotPresent
     name: busybox
   restartPolicy: Always
