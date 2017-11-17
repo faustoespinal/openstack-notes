@@ -15,6 +15,7 @@ spec:
         version: v1
         kubernetes.io/cluster-service: "true"
     spec:
+      serviceAccountName: fluentd-svc-acct
       containers:
       - name: fluentd
         image: quay.io/fluent/fluentd-kubernetes-daemonset
