@@ -82,7 +82,9 @@ spec:
         - name: ELASTICSEARCH_PASSWORD
           value: changeme
         - name: POD_NAMESPACE
-          value: default
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         securityContext:
           runAsUser: 0
         resources:

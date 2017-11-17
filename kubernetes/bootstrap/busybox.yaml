@@ -8,7 +8,7 @@ spec:
   - image: busybox
     command: 
       - "/bin/sh"
-    args: ["-c", "export COUNT=1; while true; do echo 'hello there counter: $COUNT'; export COUNT=`expr $COUNT + 1`; sleep 1;done"]
+    args: ["-c", "echo 'busybox starting...'; idx=1; while true; do echo 'Service A - Index=$idx'; idx=`expr $idx + 1`; sleep 1; done"]
     imagePullPolicy: IfNotPresent
     name: busybox
   restartPolicy: Always
