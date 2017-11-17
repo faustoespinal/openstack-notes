@@ -6,9 +6,9 @@ metadata:
 spec:
   containers:
   - image: busybox
-    command: 
+    command:
       - "/bin/sh"
-    args: ["-c", "echo 'busybox starting...'; idx=1; while true; do echo 'Service A - Index=$idx'; idx=`expr $idx + 1`; sleep 1; done"]
+    args: ["-c", "echo 'busybox starting...'; while true; do echo 'Service A'; date; echo '===================='; sleep 2; done"]
     imagePullPolicy: IfNotPresent
     name: busybox
   restartPolicy: Always
