@@ -48,15 +48,29 @@ spec:
     spec:
       containers:
       - name: elasticsearch-logging
-        image: docker.elastic.co/elasticsearch/elasticsearch:5.6.3
+        image: gcr.io/google_containers/elasticsearch:v5.5.1
+        resources:
+          # need more cpu upon initialization, therefore burstable class
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 100m
         ports:
         - containerPort: 9200
+          name: db
+          protocol: TCP
         - containerPort: 9300
+          name: transport
+          protocol: TCP
         env:
         - name: "discovery.type"
           value: "single-node"
         - name: "LS_JAVA_OPTS"
           value: "-Xmx512m -Xms512m"
+        - name: "NAMESPACE"
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         volumeMounts:
         # name must match the volume name below
         - name: nfs
