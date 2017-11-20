@@ -1,22 +1,22 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: elasticsearch.edison
+  name: elasticsearch-logging
   namespace: kube-system
 spec:
   rules:
-  - host: elasticsearch.edison
+  - host: elasticsearch-logging.mufc
     http:
       paths:
       - path: /
         backend:
-          serviceName: elasticsearch 
+          serviceName: elasticsearch-logging
           servicePort: 9200
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: elasticsearch
+  name: elasticsearch-logging
   namespace: kube-system
   labels:
     app: elasticsearch
@@ -36,7 +36,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: elasticsearch
+  name: elasticsearch-logging
   namespace: kube-system
 spec:
   replicas: 1
@@ -69,22 +69,22 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: kibana.edison
+  name: kibana-logging
   namespace: kube-system
 spec:
   rules:
-  - host: kibana.edison
+  - host: kibana-logging.mufc
     http:
       paths:
       - path: /
         backend:
-          serviceName: kibana 
+          serviceName: kibana-logging
           servicePort: 5601
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: kibana
+  name: kibana-logging
   namespace: kube-system
   labels:
     app: kibana
@@ -100,7 +100,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: kibana
+  name: kibana-logging
   namespace: kube-system
 spec:
   replicas: 1
@@ -116,7 +116,7 @@ spec:
         ports:
         - containerPort: 5601
         env:
-        - name: SERVER_NAME
+        - name: SERVER_HOST
           value: "0.0.0.0"
         - name: ELASTICSEARCH_URL
-          value: "http://elasticsearch:9200"
+          value: "http://elasticsearch-logging:9200"
