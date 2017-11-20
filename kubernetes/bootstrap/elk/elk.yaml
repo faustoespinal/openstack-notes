@@ -16,7 +16,8 @@ rules:
   - ""
   resources:
   - pods
-  - namespace
+  - namespaces
+  - services
   verbs:
   - get
   - list
@@ -103,6 +104,10 @@ spec:
           name: transport
           protocol: TCP
         env:
+        - name: "NETWORK_HOST"
+          value: "0.0.0.0"
+        - name: "HTTP_PORT"
+          value: "9200"
         - name: "discovery.type"
           value: "single-node"
         - name: "LS_JAVA_OPTS"
