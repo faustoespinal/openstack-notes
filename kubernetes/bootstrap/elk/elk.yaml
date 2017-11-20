@@ -30,7 +30,7 @@ spec:
     port: 9300
     targetPort: 9300
   selector:
-    app: elasticsearch
+    app: elasticsearch-logging
     tier: backend
 ---
 apiVersion: extensions/v1beta1
@@ -43,11 +43,11 @@ spec:
   template:
     metadata:
       labels:
-        app: elasticsearch
+        app: elasticsearch-logging
         tier: backend
     spec:
       containers:
-      - name: elasticsearch
+      - name: elasticsearch-logging
         image: docker.elastic.co/elasticsearch/elasticsearch:5.6.3
         ports:
         - containerPort: 9200
@@ -94,7 +94,7 @@ spec:
   - port: 5601
     targetPort: 5601
   selector:
-    app: kibana
+    app: kibana-logging
     tier: frontend
 ---
 apiVersion: extensions/v1beta1
@@ -107,15 +107,17 @@ spec:
   template:
     metadata:
       labels:
-        app: kibana
+        app: kibana-logging
         tier: frontend
     spec:
       containers:
-      - name: kibana
+      - name: kibana-logging
         image: docker.elastic.co/kibana/kibana:5.6.3
         ports:
         - containerPort: 5601
         env:
+        - name: SERVER_NAME
+          value: "kibana-logging"
         - name: SERVER_HOST
           value: "0.0.0.0"
         - name: ELASTICSEARCH_URL
