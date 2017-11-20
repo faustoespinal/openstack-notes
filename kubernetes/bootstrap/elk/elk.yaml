@@ -106,6 +106,10 @@ spec:
         env:
         - name: "NETWORK_HOST"
           value: "0.0.0.0"
+        - name: "NETWORK_BIND_HOST"
+          value: "0.0.0.0"
+        - name: "NETWORK_PUBLISH_HOST"
+          value: "0.0.0.0"
         - name: "HTTP_PORT"
           value: "9200"
         - name: "discovery.type"
