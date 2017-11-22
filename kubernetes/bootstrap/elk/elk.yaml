@@ -114,6 +114,8 @@ spec:
           value: "9200"
         - name: "discovery.type"
           value: "single-node"
+        - name: "bootstrap.memory_lock"
+          value: "true"
         - name: "ES_JAVA_OPTS"
           value: "-Xmx512m -Xms512m"
         - name: "NAMESPACE"
