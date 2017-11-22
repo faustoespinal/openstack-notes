@@ -89,6 +89,10 @@ spec:
       serviceAccountName: elasticsearch
       containers:
       - name: elasticsearch-logging
+        securityContext:
+          capabilities:
+            add:
+              - IPC_LOCK
         image: docker.elastic.co/elasticsearch/elasticsearch:6.0.0
         resources:
           # need more cpu upon initialization, therefore burstable class
@@ -112,6 +116,12 @@ spec:
           value: "0.0.0.0"
         - name: "HTTP_PORT"
           value: "9200"
+        - name: "NODE_MASTER"
+          value: "true"
+        - name: "NODE_DATA"
+          value: "true"
+        - name: "HTTP_ENABLE"
+          value: "true"
         - name: "discovery.type"
           value: "single-node"
         - name: "ELASTIC_PASSWORD"
