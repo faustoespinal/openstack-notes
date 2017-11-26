@@ -120,8 +120,6 @@ spec:
           value: "true"
         - name: "discovery.type"
           value: "single-node"
-        - name: "ELASTIC_PASSWORD"
-          value: "edison"
         - name: "ES_JAVA_OPTS"
           value: "-Xmx512m -Xms512m"
         - name: "NAMESPACE"
@@ -191,7 +189,5 @@ spec:
           value: "kibana-logging"
         - name: SERVER_HOST
           value: "0.0.0.0"
-        - name: ELASTICSEARCH_PASSWORD
-          value: "edison"
         - name: ELASTICSEARCH_URL
           value: "http://elasticsearch-logging:9200"
